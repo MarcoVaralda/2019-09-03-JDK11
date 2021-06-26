@@ -6,6 +6,8 @@ package it.polito.tdp.food;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+
+import it.polito.tdp.food.model.Adiacenza;
 import it.polito.tdp.food.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -40,28 +42,65 @@ public class FoodController {
     private Button btnCammino; // Value injected by FXMLLoader
 
     @FXML // fx:id="boxPorzioni"
-    private ComboBox<?> boxPorzioni; // Value injected by FXMLLoader
+    private ComboBox<String> boxPorzioni; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtResult"
     private TextArea txtResult; // Value injected by FXMLLoader
 
     @FXML
     void doCammino(ActionEvent event) {
-    	txtResult.clear();
-    	txtResult.appendText("Cerco cammino peso massimo...");
+    	String lunghezzaCammino = this.txtPassi.getText();
+    	int N = 0;
+    	try {
+    		N = Integer.parseInt(lunghezzaCammino);
+    	}
+    	catch(NumberFormatException nbe) {
+    		this.txtResult.setText("Devi inserire la lunghezza del cammino da calcolare e deve essere un numero intero!");
+    		return;
+    	}
+    	
+    	String scelto = this.boxPorzioni.getValue();
+    	if(scelto == null) {
+    		this.txtResult.setText("Non hai inserito nessun tipo di porzione!");
+    		return;
+    	}
+    	
+    	this.txtResult.appendText(this.model.cercaCammino(N, scelto));
     }
 
     @FXML
     void doCorrelate(ActionEvent event) {
-    	txtResult.clear();
-    	txtResult.appendText("Cerco porzioni correlate...");
+    	String scelto = this.boxPorzioni.getValue();
+    	if(scelto == null) {
+    		this.txtResult.setText("Non hai inserito nessun tipo di porzione!");
+    		return;
+    	}
     	
+    	String result = "\n\nTipi di porzione correlati a "+scelto+":\n";
+    	
+    	for(Adiacenza a: this.model.getCorrelati(scelto)) {
+    		result += a.getP1()+" - "+a.getPeso()+"\n";
+    	}
+    	
+    	this.txtResult.appendText(result);
     }
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
     	txtResult.clear();
-    	txtResult.appendText("Creazione grafo...");
+    	String stringaCalorie = this.txtCalorie.getText();
+    	int calorie;
+    	try {
+    		calorie = Integer.parseInt(stringaCalorie);
+    	}
+    	catch(NumberFormatException nbe) {
+    		this.txtResult.setText("Devi inserire un valore di tipo double nella casella delle calorie!");
+    		return;
+    	}
+    	
+    	this.txtResult.setText(this.model.creaGrafo(calorie));
+    	
+    	this.boxPorzioni.getItems().addAll(this.model.getVertici());
     	
     }
 

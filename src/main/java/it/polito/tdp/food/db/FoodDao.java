@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import it.polito.tdp.food.model.Adiacenza;
 import it.polito.tdp.food.model.Condiment;
 import it.polito.tdp.food.model.Food;
 import it.polito.tdp.food.model.Portion;
@@ -108,6 +110,68 @@ public class FoodDao {
 		}
 
 	}
+	
+	public List<Adiacenza> getArchi(int calorie){
+		String sql = "SELECT p1.portion_display_name AS p1, p2.portion_display_name AS p2, COUNT(*) AS peso "
+				+ "FROM `portion` p1, `portion` p2 "
+				+ "WHERE p1.food_code=p2.food_code "
+				+ "		AND p1.portion_display_name>p2.portion_display_name "
+				+ "		AND p1.calories<? AND p2.calories<? "
+				+ "GROUP BY p1.portion_display_name,p2.portion_display_name" ;
+		try {
+			Connection conn = DBConnect.getConnection() ;
+
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			st.setInt(1, calorie);
+			st.setInt(2, calorie);
+			
+			List<Adiacenza> list = new ArrayList<>() ;
+			
+			ResultSet res = st.executeQuery() ;
+			
+			while(res.next()) {
+				list.add(new Adiacenza(res.getString("p1"),res.getString("p2"),res.getInt("peso")));
+			}
+			
+			conn.close();
+			return list ;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null ;
+		}
+
+	}
+	
+	public List<String> tipiDiPorzione(int calorie) {
+		String sql = "SELECT DISTINCT portion_display_name "
+				+ "FROM `portion` "
+				+ "WHERE calories<? "
+				+ "ORDER BY portion_display_name" ;
+		try {
+			Connection conn = DBConnect.getConnection() ;
+
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			st.setInt(1, calorie);
+			
+			List<String> list = new ArrayList<>() ;
+			
+			ResultSet res = st.executeQuery() ;
+			
+			while(res.next()) {
+				list.add(res.getString("portion_display_name"));
+			}
+			
+			conn.close();
+			return list ;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null ;
+		}
+	}
+	
+	
 	
 	
 
